@@ -1,8 +1,11 @@
 import typing
-from typing import Generic, Literal, Optional, TypeVar, Union, Callable, final, Any, TypeAlias, Never, TypeGuard
+from typing import Generic, Literal, Optional, TypeVar, Union, Callable, final, Any, TypeAlias, Never, TypeGuard, TYPE_CHECKING
 from abc import ABC, abstractmethod
 
-from .result import Result, Ok, Err
+if TYPE_CHECKING:
+    from .result import Result, Ok, Err # type: ignore
+
+from . import result
 
 T = TypeVar('T') # Type of the value in Some
 U = TypeVar('U') # Type of the result of map/and_then
@@ -66,12 +69,12 @@ class OptionBase(Generic[T], ABC):
         pass
 
     @abstractmethod
-    def ok_or(self, err: E) -> Result[T, E]:
+    def ok_or(self, err: E) -> 'result.Result[T, E]':
         """Transform Option[T] into Result[T, E], mapping Some(v) to Ok(v) and Nothing to Err(err)."""
         pass
 
     @abstractmethod
-    def ok_or_else(self, err_func: Callable[[], E]) -> Result[T, E]:
+    def ok_or_else(self, err_func: Callable[[], E]) -> 'result.Result[T, E]':
         """Transform Option[T] into Result[T, E], mapping Some(v) to Ok(v) and Nothing to Err(err_func())."""
         pass
 
@@ -187,13 +190,13 @@ class Some(OptionBase[T]):
         """Apply the function to the contained value."""
         return func(self._value)
 
-    def ok_or(self, err: E) -> Result[T, E]:
+    def ok_or(self, err: E) -> 'result.Result[T, E]':
         """Return Ok containing the value."""
-        return Ok(self._value)
+        return result.Ok(self._value)
 
-    def ok_or_else(self, err_func: Callable[[], E]) -> Result[T, E]:
+    def ok_or_else(self, err_func: Callable[[], E]) -> 'result.Result[T, E]':
         """Return Ok containing the value."""
-        return Ok(self._value)
+        return result.Ok(self._value)
 
     def and_(self, optb: Option[U]) -> Option[U]:
         """Return optb because self is Some."""
@@ -308,13 +311,13 @@ class Nothing(OptionBase[Any]): # Generic type doesn't matter for Nothing
         """Compute the default value using the provided function."""
         return default_func()
 
-    def ok_or(self, err: E) -> Result[Any, E]: # T is Any for Nothing
+    def ok_or(self, err: E) -> 'result.Result[Any, E]': # T is Any for Nothing
         """Return Err containing the provided error."""
-        return Err(err)
+        return result.Err(err)
 
-    def ok_or_else(self, err_func: Callable[[], E]) -> Result[Any, E]: # T is Any for Nothing
+    def ok_or_else(self, err_func: Callable[[], E]) -> 'result.Result[Any, E]': # T is Any for Nothing
         """Return Err containing the error computed by err_func."""
-        return Err(err_func())
+        return result.Err(err_func())
 
     def and_(self, optb: Option[U]) -> Option[U]:
         """Return Nothing because self is Nothing."""

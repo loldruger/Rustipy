@@ -1,9 +1,12 @@
 import copy
 
-from typing import Generic, Never, TypeVar, Union, Callable, final, TypeAlias, TypeGuard, Literal, cast, Any, Iterator
+from typing import Generic, Never, TypeVar, Union, Callable, final, TypeAlias, TypeGuard, Literal, cast, Any, Iterator, TYPE_CHECKING 
 from abc import ABC, abstractmethod
 
-from .option import Option, OptionBase, Some, NOTHING, is_some
+if TYPE_CHECKING:
+    from .option import Option, OptionBase, Some, NOTHING, is_some # type: ignore
+
+from . import option
 
 T = TypeVar('T') # Type of the success value
 E = TypeVar('E') # Type of the error value
@@ -28,12 +31,12 @@ class ResultBase(Generic[T, E], ABC):
         return not self.is_ok()
 
     @abstractmethod
-    def ok(self) -> Option[T]:
+    def ok(self) -> 'option.Option[T]':
         """Convert Result[T, E] to Option[T], discarding the error if Err."""
         pass
 
     @abstractmethod
-    def err(self) -> Option[E]:
+    def err(self) -> 'option.Option[E]':
         """Convert Result[T, E] to Option[E], discarding the success value if Ok."""
         pass
 
@@ -136,7 +139,7 @@ class ResultBase(Generic[T, E], ABC):
 
     # Note: transpose requires T to be Option[V].
     @abstractmethod
-    def transpose(self) -> Option[Result[V, E]]:
+    def transpose(self) -> 'option.Option[Result[V, E]]':
         """Transpose a Result of an Option into an Option of a Result."""
         pass
 
@@ -217,11 +220,11 @@ class Ok(ResultBase[T, E]):
     def is_ok(self) -> Literal[True]:
         return True
 
-    def ok(self) -> Option[T]:
-        return Some(self._value)
+    def ok(self) -> 'option.Option[T]':
+        return option.Some(self._value)
 
-    def err(self) -> Option[E]:
-        return NOTHING
+    def err(self) -> 'option.Option[E]':
+        return option.NOTHING
 
     def map(self, op: Callable[[T], U]) -> Result[U, E]:
         return Ok(op(self._value))
@@ -296,18 +299,18 @@ class Ok(ResultBase[T, E]):
             # but raise an error for type safety.
             raise TypeError("Cannot flatten Ok containing non-Result value")
 
-    def transpose(self) -> Option[Result[V, E]]:
+    def transpose(self) -> 'option.Option[Result[V, E]]':
         # Assert that the inner value is an Option
-        if isinstance(self._value, OptionBase):
+        if isinstance(self._value, option.OptionBase):
             # Cast self first, then access _value. Inner cast removed.
-            inner_option: Option[V] = cast(Ok[Option[V], E], self)._value
+            inner_option: option.Option[V] = cast(Ok[option.Option[V], E], self)._value
             # If self is Ok(Some(v)), return Some(Ok(v))
             # If self is Ok(Nothing), return Nothing
-            if is_some(inner_option):
+            if option.is_some(inner_option):
                 # Use unwrap() which is guaranteed to succeed here
-                return Some(Ok(inner_option.unwrap()))
+                return option.Some(Ok(inner_option.unwrap()))
             else: # inner_option is Nothing
-                return NOTHING
+                return option.NOTHING
         else:
             # This case should ideally not happen if called correctly,
             # but raise an error for type safety.
@@ -383,12 +386,12 @@ class Err(ResultBase[T, E]):
     def is_ok(self) -> Literal[False]:
         return False
 
-    def ok(self) -> Option[T]:
+    def ok(self) -> 'option.Option[T]':
         # Type T doesn't matter here
-        return NOTHING
+        return option.NOTHING
 
-    def err(self) -> Option[E]:
-        return Some(self._error)
+    def err(self) -> 'option.Option[E]':
+        return option.Some(self._error)
 
     def map(self, op: Callable[[T], U]) -> Result[U, E]:
         # Type U doesn't matter here, success op is not called
@@ -456,10 +459,10 @@ class Err(ResultBase[T, E]):
         # Recreating Err is safer for type compatibility.
         return Err(self._error)
 
-    def transpose(self) -> Option[Result[V, E]]:
+    def transpose(self) -> 'option.Option[Result[V, E]]':
         # If self is Err(e), return Some(Err(e))
         # Recreating Err is safer for type compatibility.
-        return Some(Err(self._error))
+        return option.Some(Err(self._error))
 
     def into_ok(self) -> Never:
         raise ValueError(f"Called into_ok on an Err value: {self._error!r}")
