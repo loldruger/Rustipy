@@ -1,0 +1,17 @@
+[project]
+name = "rustipy"
+version = "0.1.0"
+description = "Rustipy your python project"
+authors = [
+    {name = "Siyoung September", email = "loldruger@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+testpaths = ["tests"]
+python_files = ["test_*.py", "integrated_test.py"]
+python_functions = "test_*"
+
+[tool.setuptools.packages.find]
+where = ["src"]
