@@ -1,10 +1,10 @@
 import copy
-
-from typing import Generic, Never, TypeVar, Union, Callable, final, TypeAlias, TypeGuard, Literal, cast, Any, Iterator, TYPE_CHECKING 
+from collections.abc import Iterator, Callable
+from typing import Generic, Never, TypeVar, final, TypeGuard, Literal, cast, Any, TYPE_CHECKING 
 from abc import ABC, abstractmethod
 
 if TYPE_CHECKING:
-    from .option import Option, OptionBase, Some, NOTHING, is_some # type: ignore
+    from .option import Option, Option, Some, NOTHING, is_some # type: ignore
 
 from . import option
 
@@ -14,11 +14,8 @@ U = TypeVar('U') # Type for map result
 F = TypeVar('F') # Type for map_err result
 V = TypeVar('V') # Inner value type for flatten/transpose
 
-# Define the public Result type as a Union
-Result: TypeAlias = Union['Ok[T, E]', 'Err[T, E]']
-
 # Abstract Base Class
-class ResultBase(Generic[T, E], ABC):
+class Result(Generic[T, E], ABC):
     """Abstract base class for Result types (Ok or Err)."""
 
     @abstractmethod
@@ -41,22 +38,22 @@ class ResultBase(Generic[T, E], ABC):
         pass
 
     @abstractmethod
-    def map(self, op: Callable[[T], U]) -> Result[U, E]:
+    def map(self, op: Callable[[T], U]) -> 'Result[U, E]':
         """Map a Result[T, E] to Result[U, E] by applying a function to a contained Ok value."""
         pass
 
     @abstractmethod
-    def map_err(self, op: Callable[[E], F]) -> Result[T, F]:
+    def map_err(self, op: Callable[[E], F]) -> 'Result[T, F]':
         """Map a Result[T, E] to Result[T, F] by applying a function to a contained Err value."""
         pass
 
     @abstractmethod
-    def inspect(self, op: Callable[[T], None]) -> Result[T, E]:
+    def inspect(self, op: Callable[[T], None]) -> 'Result[T, E]':
         """Call a function with the contained Ok value for inspection."""
         pass
 
     @abstractmethod
-    def inspect_err(self, op: Callable[[E], None]) -> Result[T, E]:
+    def inspect_err(self, op: Callable[[E], None]) -> 'Result[T, E]':
         """Call a function with the contained Err value for inspection."""
         pass
 
@@ -81,12 +78,12 @@ class ResultBase(Generic[T, E], ABC):
         pass
 
     @abstractmethod
-    def and_then(self, op: Callable[[T], Result[U, E]]) -> Result[U, E]:
+    def and_then(self, op: Callable[[T], 'Result[U, E]']) -> 'Result[U, E]':
         """Call op if the result is Ok, otherwise return the Err value of self."""
         pass
 
     @abstractmethod
-    def or_else(self, op: Callable[[E], Result[T, F]]) -> Result[T, F]:
+    def or_else(self, op: Callable[[E], 'Result[T, F]']) -> 'Result[T, F]':
         """Call op if the result is Err, otherwise return the Ok value of self."""
         pass
 
@@ -127,19 +124,19 @@ class ResultBase(Generic[T, E], ABC):
         pass
 
     @abstractmethod
-    def or_(self, res: Result[T, F]) -> Result[T, F]:
+    def or_(self, res: 'Result[T, F]') -> 'Result[T, F]':
         """Return the result if it is Ok, otherwise return res."""
         pass
 
     # Note: flatten requires T to be Result[V, E].
     @abstractmethod
-    def flatten(self) -> Result[V, E]:
+    def flatten(self) -> 'Result[object, E]':
         """Convert Result[Result[V, E], E] to Result[V, E]."""
         pass
 
     # Note: transpose requires T to be Option[V].
     @abstractmethod
-    def transpose(self) -> 'option.Option[Result[V, E]]':
+    def transpose(self) -> 'option.Option[Result[object, E]]':
         """Transpose a Result of an Option into an Option of a Result."""
         pass
 
@@ -156,7 +153,7 @@ class ResultBase(Generic[T, E], ABC):
         pass
 
     @abstractmethod
-    def and_(self, res: Result[U, E]) -> Result[U, E]:
+    def and_(self, res: 'Result[U, E]') -> 'Result[U, E]':
         """Return res if the result is Ok, otherwise return the Err value of self."""
         pass
 
@@ -166,22 +163,22 @@ class ResultBase(Generic[T, E], ABC):
         pass
 
     @abstractmethod
-    def cloned(self) -> Result[T, E]:
+    def cloned(self) -> 'Result[T, E]':
         """Return a new Result with deep-copied inner values."""
         pass
 
     @abstractmethod
-    def copied(self) -> Result[T, E]:
+    def copied(self) -> 'Result[T, E]':
         """Return a new Result with shallow-copied inner values."""
         pass
 
     @abstractmethod
-    def as_ref(self) -> Result[T, E]:
+    def as_ref(self) -> 'Result[T, E]':
         """Convert &Result<T, E> to Result<&T, &E> (conceptually). Returns self."""
         pass
 
     @abstractmethod
-    def as_mut(self) -> Result[T, E]:
+    def as_mut(self) -> 'Result[T, E]':
         """Convert &mut Result<T, E> to Result<&mut T, &mut E> (conceptually). Returns self."""
         pass
 
@@ -191,17 +188,6 @@ class ResultBase(Generic[T, E], ABC):
         """Return a mutable iterator over the possibly contained Ok value."""
         pass
 
-    # --- New abstract methods ---
-    @abstractmethod
-    def contains(self, x: T) -> bool:
-        """Return True if the result is Ok and the value inside it is equal to x."""
-        pass
-
-    @abstractmethod
-    def contains_err(self, f: E) -> bool:
-        """Return True if the result is Err and the value inside it is equal to f."""
-        pass
-
     @abstractmethod
     def map_or_default(self, func: Callable[[T], U]) -> U:
         """Apply a function to the contained Ok value, or return a default if Err."""
@@ -209,7 +195,7 @@ class ResultBase(Generic[T, E], ABC):
 
 # Concrete class for Ok value
 @final
-class Ok(ResultBase[T, E]):
+class Ok(Result[T, E]):
     """Represents a successful Result containing a value."""
     __match_args__ = ('_value',)
     __slots__ = ('_value',)
@@ -288,22 +274,22 @@ class Ok(ResultBase[T, E]):
         # Re-creating Ok is safer for type compatibility.
         return Ok(self._value)
 
-    def flatten(self) -> Result[V, E]:
+    def flatten(self) -> Result[object, E]:
         # Assert that the inner value is a Result
-        if isinstance(self._value, ResultBase):
+        if isinstance(self._value, Result):
             # Cast self first, then access _value. Inner cast removed.
-            inner_result: Result[V, E] = cast(Ok[Result[V, E], E], self)._value
+            inner_result: Result[object, E] = cast(Ok[Result[object, E], E], self)._value
             return inner_result
         else:
             # This case should ideally not happen if called correctly,
             # but raise an error for type safety.
             raise TypeError("Cannot flatten Ok containing non-Result value")
 
-    def transpose(self) -> 'option.Option[Result[V, E]]':
+    def transpose(self) -> 'option.Option[Result[object, E]]':
         # Assert that the inner value is an Option
-        if isinstance(self._value, option.OptionBase):
+        if isinstance(self._value, option.Option):
             # Cast self first, then access _value. Inner cast removed.
-            inner_option: option.Option[V] = cast(Ok[option.Option[V], E], self)._value
+            inner_option: option.Option[object] = cast(Ok[option.Option[object], E], self)._value
             # If self is Ok(Some(v)), return Some(Ok(v))
             # If self is Ok(Nothing), return Nothing
             if option.is_some(inner_option):
@@ -351,15 +337,6 @@ class Ok(ResultBase[T, E]):
         # Yield the contained value, allowing mutation if it's mutable.
         yield self._value
 
-    # --- Implementations for new methods ---
-    def contains(self, x: T) -> bool:
-        # Check if the contained value equals x.
-        return self._value == x
-
-    def contains_err(self, f: E) -> Literal[False]:
-        # Cannot contain an error if Ok.
-        return False
-
     def map_or_default(self, func: Callable[[T], U]) -> U:
         # Apply the function to the contained value.
         return func(self._value)
@@ -375,7 +352,7 @@ class Ok(ResultBase[T, E]):
 
 # Concrete class for Err value
 @final
-class Err(ResultBase[T, E]):
+class Err(Result[T, E]):
     """Represents a failed Result containing an error."""
     __match_args__ = ('_error',)
     __slots__ = ('_error',)
@@ -454,12 +431,12 @@ class Err(ResultBase[T, E]):
         # Return the alternative result 'res'
         return res
 
-    def flatten(self) -> Result[V, E]:
+    def flatten(self) -> Result[object, E]:
         # If self is Err(e), return Err(e) regardless of inner type V
         # Recreating Err is safer for type compatibility.
         return Err(self._error)
 
-    def transpose(self) -> 'option.Option[Result[V, E]]':
+    def transpose(self) -> 'option.Option[Result[object, E]]':
         # If self is Err(e), return Some(Err(e))
         # Recreating Err is safer for type compatibility.
         return option.Some(Err(self._error))
@@ -508,15 +485,6 @@ class Err(ResultBase[T, E]):
     def iter_mut(self) -> Iterator[T]:
         # Return an empty iterator as there's no value to mutate.
         return iter(())
-
-    # --- Implementations for new methods ---
-    def contains(self, x: T) -> Literal[False]:
-        # Cannot contain a value if Err.
-        return False
-
-    def contains_err(self, f: E) -> bool:
-        # Check if the contained error equals f.
-        return self._error == f
 
     def map_or_default(self, func: Callable[[T], U]) -> U:
         # Self is Err, return default value of U.

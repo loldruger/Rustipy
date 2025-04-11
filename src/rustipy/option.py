@@ -1,5 +1,6 @@
 import typing
-from typing import Generic, Literal, Optional, TypeVar, Union, Callable, final, Any, TypeAlias, Never, TypeGuard, TYPE_CHECKING
+from typing import Generic, Literal, TypeVar, final, Any, Never, TypeGuard, TYPE_CHECKING
+from collections.abc import Callable
 from abc import ABC, abstractmethod
 
 if TYPE_CHECKING:
@@ -11,11 +12,8 @@ T = TypeVar('T') # Type of the value in Some
 U = TypeVar('U') # Type of the result of map/and_then
 E = TypeVar('E') # Type for error in ok_or/ok_or_else (placeholder)
 
-# Define the public Option type as a Union
-Option: TypeAlias = Union['Some[T]', 'Nothing']
-
 # Abstract Base Class (Optional but helps define the interface)
-class OptionBase(Generic[T], ABC):
+class Option(Generic[T], ABC):
     """Abstract base class for Option types."""
 
     @abstractmethod
@@ -28,12 +26,12 @@ class OptionBase(Generic[T], ABC):
         return not self.is_some()
 
     @abstractmethod
-    def map(self, func: Callable[[T], U]) -> Option[U]:
+    def map(self, func: Callable[[T], U]) -> 'Option[U]':
         """Apply a function to the contained value (if any)."""
         pass
 
     @abstractmethod
-    def and_then(self, func: Callable[[T], Option[U]]) -> Option[U]:
+    def and_then(self, func: Callable[[T], 'Option[U]']) -> 'Option[U]':
         """Apply a function returning an Option to the contained value (if any)."""
         pass
 
@@ -79,27 +77,27 @@ class OptionBase(Generic[T], ABC):
         pass
 
     @abstractmethod
-    def and_(self, optb: Option[U]) -> Option[U]:
+    def and_(self, optb: 'Option[U]') -> 'Option[U]':
         """Return Nothing if the option is Nothing, otherwise return optb."""
         pass
 
     @abstractmethod
-    def filter(self, predicate: Callable[[T], bool]) -> Option[T]:
+    def filter(self, predicate: Callable[[T], bool]) -> 'Option[T]':
         """Return Nothing if the option is Nothing or the predicate returns False."""
         pass
 
     @abstractmethod
-    def or_(self, optb: Option[T]) -> Option[T]:
+    def or_(self, optb: 'Option[T]') -> 'Option[T]':
         """Return the option if it contains a value, otherwise return optb."""
         pass
 
     @abstractmethod
-    def or_else(self, func: Callable[[], Option[T]]) -> Option[T]:
+    def or_else(self, func: Callable[[], 'Option[T]']) -> 'Option[T]':
         """Return the option if it contains a value, otherwise call func and return its result."""
         pass
 
     @abstractmethod
-    def xor(self, optb: Option[T]) -> Option[T]:
+    def xor(self, optb: 'Option[T]') -> 'Option[T]':
         """Return Some if exactly one of self, optb is Some, otherwise return Nothing."""
         pass
 
@@ -109,12 +107,12 @@ class OptionBase(Generic[T], ABC):
         pass
 
     @abstractmethod
-    def zip(self, other: Option[U]) -> Option[tuple[T, U]]:
+    def zip(self, other: 'Option[U]') -> 'Option[tuple[T, U]]':
         """Zip self with another Option. If both are Some, return Some((s, o)). Otherwise Nothing."""
         pass
 
     @abstractmethod
-    def inspect(self, func: Callable[[T], None]) -> Option[T]:
+    def inspect(self, func: Callable[[T], None]) -> 'Option[T]':
         """Call a function with the contained value if Some."""
         pass
 
@@ -124,7 +122,7 @@ class OptionBase(Generic[T], ABC):
     # This implementation returns the value as an Option and leaves the original unchanged.
     # A mutable version could be added if needed.
     @abstractmethod
-    def take(self) -> Option[T]:
+    def take(self) -> 'Option[T]':
         """Take the value out of the option, leaving Nothing in its place (conceptually).
            This implementation returns the value as a new Option, leaving the original unchanged."""
         pass
@@ -137,7 +135,7 @@ class OptionBase(Generic[T], ABC):
 
 # Concrete class for Some value
 @final # Indicates this class should not be subclassed further
-class Some(OptionBase[T]):
+class Some(Option[T]):
     """Represents an Option that contains a value."""
     __match_args__ = ('_value',) # For structural pattern matching
     __slots__ = ('_value',) # Optimize memory usage
@@ -261,13 +259,13 @@ class Some(OptionBase[T]):
 
 # Concrete class for Nothing value (Singleton pattern)
 @final # Indicates this class should not be subclassed further
-class Nothing(OptionBase[Any]): # Generic type doesn't matter for Nothing
+class Nothing(Option[Any]): # Generic type doesn't matter for Nothing
     """Represents an Option that contains no value (singleton)."""
     __match_args__ = () # No arguments for matching
     __slots__ = () # No instance variables needed
 
     # Singleton implementation
-    _instance: Optional['Nothing'] = None
+    _instance: 'Nothing | None'  = None
     def __new__(cls) -> 'Nothing':
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -323,7 +321,7 @@ class Nothing(OptionBase[Any]): # Generic type doesn't matter for Nothing
         """Return Nothing because self is Nothing."""
         return self # self is the NOTHING singleton
 
-    def filter(self, predicate: Callable[[Any], bool]) -> Option[T]:
+    def filter(self, predicate: Callable[[Any], bool]) -> Option[object]:
         """Return Nothing because self is Nothing."""
         return self
 
@@ -347,11 +345,11 @@ class Nothing(OptionBase[Any]): # Generic type doesn't matter for Nothing
         """Return Nothing because self is Nothing."""
         return self
 
-    def inspect(self, func: Callable[[Any], None]) -> Option[T]:
+    def inspect(self, func: Callable[[Any], None]) -> Option[object]:
         """Do nothing and return self (Nothing)."""
         return self
 
-    def take(self) -> Option[T]:
+    def take(self) -> Option[object]:
         """Return Nothing because self is Nothing."""
         return self
 
