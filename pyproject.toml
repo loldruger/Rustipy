@@ -1,6 +1,6 @@
 [project]
 name = "rustipy"
-version = "0.1.0"
+version = "0.1.1"
 description = "Rustipy your python project"
 authors = [
     {name = "Siyoung September", email = "loldruger@gmail.com"}
