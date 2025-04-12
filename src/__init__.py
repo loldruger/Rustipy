@@ -1,5 +1,4 @@
-from .rustipy.option import Option, Some, Nothing # type: ignore
-from .rustipy.result import Result, Ok, Err # type: ignore
+from .rustipy import Option, Some, Nothing, Result, Ok, Err
 
 __all__ = [
     "Option",
