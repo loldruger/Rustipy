@@ -7,13 +7,12 @@ import pytest
 from src.rustipy.result import Ok, Err, Result, is_ok, is_err
 from src.rustipy.option import Some, NOTHING, Option
 
-# --- Test Data ---
+
 OK_VALUE = 100
 ERR_VALUE = "Error occurred"
 OTHER_OK_VALUE = 200
 OTHER_ERR_VALUE = "Another error"
 DEFAULT_VALUE = 0
-# DEFAULT_ERR = "Default Error" # Unused variable removed
 
 # --- Helper Classes for Testing (Type hints added) ---
 class MyClass:
