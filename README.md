@@ -127,3 +127,19 @@ def test_type_guards():
     else:
         pytest.fail("is_nothing failed for Nothing value")
 ```
+
+## Distribution Steps
+
+1. Make some changes
+2. Increment the version at `[project]` section in `[pyproject.toml]`
+3. Commit the changes
+4. Build the package
+```
+$ uv build
+```
+5. Tag the release
+```
+$ git tag -vX.X.X
+```
+
+Done
