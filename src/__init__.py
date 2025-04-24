@@ -1,10 +1,6 @@
-from .rustipy import Option, Some, Nothing, Result, Ok, Err 
+from .rustipy import result, option
 
 __all__ = [
-    "Option",
-    "Some",
-    "Nothing",
-    "Result",
-    "Ok",
-    "Err",
+    "result",
+    "option",
 ]
