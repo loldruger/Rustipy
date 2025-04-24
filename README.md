@@ -140,6 +140,7 @@ $ uv build
 5. Tag the release
 ```
 $ git tag -vX.X.X
+$ git push origin v0.1.7
 ```
 
 Done
