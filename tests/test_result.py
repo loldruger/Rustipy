@@ -4,8 +4,8 @@ import pytest
 # Assuming your code is in src/rustipy/
 # Adjust the import path if your structure is different
 # Removed ResultBase, OptionBase from imports
-from src.rustipy.result import Ok, Err, Result, is_ok, is_err
-from src.rustipy.option import Some, NOTHING, Option
+from rustipy.result import Ok, Err, Result, is_ok, is_err
+from rustipy.option import Some, NOTHING, Option
 
 
 OK_VALUE = 100

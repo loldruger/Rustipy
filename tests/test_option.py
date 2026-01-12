@@ -1,10 +1,10 @@
 import pytest
 from typing import Any
 
-from src.rustipy.option import Option, Some, NOTHING, is_some, is_nothing
-from src.rustipy.result import Ok, Err
-from tests.test_result import OK_VALUE
+from rustipy.option import Option, Some, NOTHING, is_some, is_nothing
+from rustipy.result import Ok, Err
 
+OK_VALUE = 100
 SOME_VALUE = 123
 OTHER_VALUE = 456
 DEFAULT_OPTION_VALUE = 0
