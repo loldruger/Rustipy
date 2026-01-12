@@ -559,11 +559,11 @@ def test_mutable_value_ok():
     assert d == {'a': 1}
 
 def test_mutable_value_err():
-    # Add specific type hint for l
-    l: list[str] = ['error', 'list']
+    # Add specific type hint for err_list
+    err_list: list[str] = ['error', 'list']
     # Use specific list type in Result annotation
-    res: Result[int, list[str]] = Err(l)
-    assert res.unwrap_err() is l
+    res: Result[int, list[str]] = Err(err_list)
+    assert res.unwrap_err() is err_list
     # Use specific list type in comparison value and Err type args
     assert res == Err[Any, list[str]](['error', 'list'])
 
@@ -573,10 +573,10 @@ def test_mutable_value_err():
     # Use specific list type in comparison value and Err type args
     assert mapped == Err[int, list[str]](['error', 'list', '!'])
     # Original list should remain unchanged
-    assert l == ['error', 'list']
+    assert err_list == ['error', 'list']
 
     # Use specific list type for re-creation
-    res = Err[int, list[str]](l) # Recreate Err with original list
+    res = Err[int, list[str]](err_list) # Recreate Err with original list
     # Lambda input type inferred, Ok return type specified
     chained = res.or_else(lambda e: Ok[int, Any](len(e))) # Explicit type
     assert chained == Ok[int, Any](2) # Explicit type
