@@ -4,7 +4,7 @@ from typing import Generic, Never, TypeVar, final, TypeGuard, Literal, cast, Any
 from abc import ABC, abstractmethod
 
 if TYPE_CHECKING:
-    from .option import Option, Option, Some, NOTHING, is_some # type: ignore
+    from .option import Option, Option, Some, NONE, is_some # type: ignore
 
 from . import option
 
@@ -210,7 +210,7 @@ class Ok(Result[T, E]):
         return option.Some(self._value)
 
     def err(self) -> 'option.Option[E]':
-        return option.NOTHING
+        return option.NONE
 
     def map(self, op: Callable[[T], U]) -> Result[U, E]:
         return Ok(op(self._value))
@@ -296,7 +296,7 @@ class Ok(Result[T, E]):
                 # Use unwrap() which is guaranteed to succeed here
                 return option.Some(Ok(inner_option.unwrap()))
             else: # inner_option is Nothing
-                return option.NOTHING
+                return option.NONE
         else:
             # This case should ideally not happen if called correctly,
             # but raise an error for type safety.
@@ -365,7 +365,7 @@ class Err(Result[T, E]):
 
     def ok(self) -> 'option.Option[T]':
         # Type T doesn't matter here
-        return option.NOTHING
+        return option.NONE
 
     def err(self) -> 'option.Option[E]':
         return option.Some(self._error)

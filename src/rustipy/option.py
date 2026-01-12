@@ -132,6 +132,10 @@ class Option(Generic[T], ABC):
         """Return True if the option is Some and the value inside it matches a predicate."""
         pass
 
+    def __bool__(self) -> bool:
+        """Return True if Some, False if Nothing."""
+        return self.is_some()
+
 
 # Concrete class for Some value
 @final # Indicates this class should not be subclassed further
@@ -205,7 +209,7 @@ class Some(Option[T]):
         if predicate(self._value):
             return self
         else:
-            return NOTHING
+            return NONE
 
     def or_(self, optb: Option[T]) -> Option[T]:
         """Return self because it contains a value."""
@@ -218,7 +222,7 @@ class Some(Option[T]):
     def xor(self, optb: Option[T]) -> Option[T]:
         """Return Nothing if optb is Some, otherwise return self."""
         if optb.is_some():
-            return NOTHING
+            return NONE
         else:
             return self
 
@@ -231,7 +235,7 @@ class Some(Option[T]):
         if isinstance(other, Some):
             return Some((self._value, other._value))
         else:
-            return NOTHING
+            return NONE
 
     def inspect(self, func: Callable[[T], None]) -> Option[T]:
         """Call the function with the contained value and return self."""
@@ -358,13 +362,13 @@ class Nothing(Option[Any]): # Generic type doesn't matter for Nothing
         return False
 
     def __eq__(self, other: object) -> bool:
-        # Nothing is only equal to itself (the singleton instance)
-        return other is self
+        # Nothing is equal to itself or None
+        return other is self or other is None
 
     def __repr__(self) -> str:
-        return "Nothing"
+        return "NONE"
 
-NOTHING: Nothing = Nothing()
+NONE: Nothing = Nothing()
 
 # Helper function to check if a value is Some and bind its type
 def is_some(val: Option[T]) -> TypeGuard[Some[T]]:

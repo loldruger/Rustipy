@@ -60,35 +60,35 @@ def test_chaining_err_path():
 ### Option example
 > check the test file for more examples
 ```python
-from rustipy.option import Option, Some, Nothing
+from rustipy.option import Option, Some, NONE
 from tests.test_result import OK_VALUE
 
 def int_to_some_str(x: int) -> Option[str]:
     return Some(str(x))
 
 def int_to_nothing_if_odd(x: int) -> Option[int]:
-    return Nothing if x % 2 != 0 else Some(x)
+    return NONE if x % 2 != 0 else Some(x)
 
 def int_to_some_str(x: int) -> Option[str]:
     return Some(str(x))
 
 def int_to_nothing_if_odd(x: int) -> Option[int]:
-    return Nothing if x % 2 != 0 else Some(x)
+    return NONE if x % 2 != 0 else Some(x)
 
 SOME_VALUE = 123
 
 def test_and_then():
     some_even: Option[int] = Some(10)
     some_odd: Option[int] = Some(5)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
 
     assert some_even.and_then(int_to_some_str) == Some("10")
     assert some_odd.and_then(int_to_some_str) == Some("5")
-    assert nothing.and_then(int_to_some_str) == NOTHING
+    assert nothing.and_then(int_to_some_str) == NONE
 
     assert some_even.and_then(int_to_nothing_if_odd) == Some(10)
-    assert some_odd.and_then(int_to_nothing_if_odd) == NOTHING
-    assert nothing.and_then(int_to_nothing_if_odd) == NOTHING
+    assert some_odd.and_then(int_to_nothing_if_odd) == NONE
+    assert nothing.and_then(int_to_nothing_if_odd) == NONE
 
 def test_inspect():
     inspected_val = None
@@ -97,7 +97,7 @@ def test_inspect():
         inspected_val = x * 2
 
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
 
     assert some.inspect(inspector) is some # Returns self
     assert inspected_val == SOME_VALUE * 2
@@ -108,7 +108,7 @@ def test_inspect():
 
 def test_type_guards():
     some: Option[int] = Some(OK_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
 
     if is_some(some):
         assert some.unwrap() == OK_VALUE
@@ -123,7 +123,7 @@ def test_type_guards():
 
     if is_nothing(nothing):
         # Can't unwrap Nothing, just check identity
-        assert nothing is NOTHING
+        assert nothing is NONE
     else:
         pytest.fail("is_nothing failed for Nothing value")
 ```

@@ -1,7 +1,7 @@
 import pytest
 from typing import Any
 
-from rustipy.option import Option, Some, NOTHING, is_some, is_nothing
+from rustipy.option import Option, Some, NONE, is_some, is_nothing
 from rustipy.result import Ok, Err
 
 OK_VALUE = 100
@@ -41,27 +41,27 @@ def int_to_nothing_if_odd(x: int) -> Option[int]:
     if x % 2 == 0:
         return Some(x)
     else:
-        return NOTHING
+        return NONE
 
 # --- Test Cases ---
 
 # --- Basic Checks ---
 def test_is_some():
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     assert some.is_some() is True
     assert nothing.is_some() is False
 
 def test_is_none():
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     assert some.is_none() is False
     assert nothing.is_none() is True
 
 def test_is_some_and():
     some_pos: Option[int] = Some(SOME_VALUE) # 123 > 0 -> True
     some_neg: Option[int] = Some(-10)       # -10 > 0 -> False
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
 
     assert some_pos.is_some_and(check_positive) is True
     assert some_neg.is_some_and(check_positive) is False
@@ -70,27 +70,27 @@ def test_is_some_and():
 # --- Unwrapping ---
 def test_unwrap():
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     assert some.unwrap() == SOME_VALUE
     with pytest.raises(ValueError, match="Cannot unwrap a Nothing value."):
         nothing.unwrap()
 
 def test_expect():
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     assert some.expect("Value should be present") == SOME_VALUE
     with pytest.raises(ValueError, match="Custom error message"):
         nothing.expect("Custom error message")
 
 def test_unwrap_or():
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     assert some.unwrap_or(DEFAULT_OPTION_VALUE) == SOME_VALUE
     assert nothing.unwrap_or(DEFAULT_OPTION_VALUE) == DEFAULT_OPTION_VALUE
 
 def test_unwrap_or_else():
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     default_func = lambda: DEFAULT_OPTION_VALUE * 2
 
     assert some.unwrap_or_else(default_func) == SOME_VALUE
@@ -99,20 +99,20 @@ def test_unwrap_or_else():
 # --- Mapping ---
 def test_map():
     some: Option[int] = Some(SOME_VALUE) # 123
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     assert some.map(square) == Some(SOME_VALUE * SOME_VALUE) # Some(15129)
-    assert nothing.map(square) == NOTHING
+    assert nothing.map(square) == NONE
 
 def test_map_or():
     some: Option[int] = Some(SOME_VALUE) # 123
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     default_str = "default"
     assert some.map_or(default_str, stringify) == str(SOME_VALUE) # "123"
     assert nothing.map_or(default_str, stringify) == default_str
 
 def test_map_or_else():
     some: Option[int] = Some(SOME_VALUE) # 123
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     default_func = lambda: "computed_default"
     assert some.map_or_else(default_func, stringify) == str(SOME_VALUE) # "123"
     assert nothing.map_or_else(default_func, stringify) == "computed_default"
@@ -121,21 +121,21 @@ def test_map_or_else():
 def test_and_then():
     some_even: Option[int] = Some(10)
     some_odd: Option[int] = Some(5)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
 
     assert some_even.and_then(int_to_some_str) == Some("10")
     assert some_odd.and_then(int_to_some_str) == Some("5")
-    assert nothing.and_then(int_to_some_str) == NOTHING
+    assert nothing.and_then(int_to_some_str) == NONE
 
     assert some_even.and_then(int_to_nothing_if_odd) == Some(10)
-    assert some_odd.and_then(int_to_nothing_if_odd) == NOTHING
-    assert nothing.and_then(int_to_nothing_if_odd) == NOTHING
+    assert some_odd.and_then(int_to_nothing_if_odd) == NONE
+    assert nothing.and_then(int_to_nothing_if_odd) == NONE
 
 def test_and_():
     s1: Option[int] = Some(SOME_VALUE)
     s2: Option[str] = Some(SOME_STR_VALUE)
-    n1: Option[int] = NOTHING
-    n2: Option[str] = NOTHING
+    n1: Option[int] = NONE
+    n2: Option[str] = NONE
 
     assert s1.and_(s2) == s2
     assert s1.and_(n2) == n2
@@ -145,8 +145,8 @@ def test_and_():
 def test_or_():
     s1: Option[int] = Some(SOME_VALUE)
     s2: Option[int] = Some(OTHER_VALUE)
-    n1: Option[int] = NOTHING
-    n2: Option[int] = NOTHING
+    n1: Option[int] = NONE
+    n2: Option[int] = NONE
 
     assert s1.or_(s2) == s1
     assert s1.or_(n1) == s1
@@ -155,54 +155,54 @@ def test_or_():
 
 def test_or_else():
     s1: Option[int] = Some(SOME_VALUE)
-    n1: Option[int] = NOTHING
+    n1: Option[int] = NONE
     default_some_func = lambda: Some(DEFAULT_OPTION_VALUE)
-    default_nothing_func = lambda: NOTHING
+    default_nothing_func = lambda: NONE
 
     assert s1.or_else(default_some_func) == s1
     assert s1.or_else(default_nothing_func) == s1
     assert n1.or_else(default_some_func) == Some(DEFAULT_OPTION_VALUE)
-    assert n1.or_else(default_nothing_func) == NOTHING
+    assert n1.or_else(default_nothing_func) == NONE
 
 def test_xor():
     s1: Option[int] = Some(SOME_VALUE)
     s2: Option[int] = Some(OTHER_VALUE)
-    n1: Option[int] = NOTHING
-    n2: Option[int] = NOTHING # Same as n1
+    n1: Option[int] = NONE
+    n2: Option[int] = NONE # Same as n1
 
-    assert s1.xor(s2) == NOTHING # Some ^ Some -> Nothing
+    assert s1.xor(s2) == NONE # Some ^ Some -> Nothing
     assert s1.xor(n1) == s1      # Some ^ Nothing -> Some
     assert n1.xor(s2) == s2      # Nothing ^ Some -> Some
-    assert n1.xor(n2) == NOTHING # Nothing ^ Nothing -> Nothing
+    assert n1.xor(n2) == NONE # Nothing ^ Nothing -> Nothing
 
 def test_zip():
     s1: Option[int] = Some(SOME_VALUE) # 123
     s2: Option[str] = Some(SOME_STR_VALUE) # "hello"
-    n1: Option[int] = NOTHING
-    n2: Option[str] = NOTHING
+    n1: Option[int] = NONE
+    n2: Option[str] = NONE
 
     assert s1.zip(s2) == Some((SOME_VALUE, SOME_STR_VALUE)) # Some((123, "hello"))
-    assert s1.zip(n2) == NOTHING
-    assert n1.zip(s2) == NOTHING
-    assert n1.zip(n2) == NOTHING
+    assert s1.zip(n2) == NONE
+    assert n1.zip(s2) == NONE
+    assert n1.zip(n2) == NONE
 
 # --- Filtering ---
 def test_filter():
     s_even: Option[int] = Some(10)
     s_odd: Option[int] = Some(5)
-    n: Option[int] = NOTHING
+    n: Option[int] = NONE
 
     assert s_even.filter(check_even) == Some(10)
-    assert s_odd.filter(check_even) == NOTHING
-    assert n.filter(check_even) == NOTHING
+    assert s_odd.filter(check_even) == NONE
+    assert n.filter(check_even) == NONE
 
     assert s_even.filter(lambda x: x > 5) == Some(10)
-    assert s_odd.filter(lambda x: x > 5) == NOTHING
+    assert s_odd.filter(lambda x: x > 5) == NONE
 
 # --- Conversion to Result ---
 def test_ok_or():
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     err_val = "Is Nothing"
 
     # Use explicit types for Ok/Err comparison due to potential inference issues
@@ -211,7 +211,7 @@ def test_ok_or():
 
 def test_ok_or_else():
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
     err_func = lambda: "Computed Error"
 
     # Use explicit types for Ok/Err comparison
@@ -226,7 +226,7 @@ def test_inspect():
         inspected_val = x * 2
 
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
 
     assert some.inspect(inspector) is some # Returns self
     assert inspected_val == SOME_VALUE * 2
@@ -238,21 +238,21 @@ def test_inspect():
 def test_take():
     # Note: This tests the non-mutating version described in the source comment
     some: Option[int] = Some(SOME_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
 
     taken_some = some.take()
     assert taken_some == Some(SOME_VALUE)
     assert some == Some(SOME_VALUE) # Original is unchanged
 
     taken_nothing = nothing.take()
-    assert taken_nothing == NOTHING
-    assert nothing == NOTHING # Original is unchanged
+    assert taken_nothing == NONE
+    assert nothing == NONE # Original is unchanged
 
 def test_contains():
     # Assuming contains was kept in Option implementation
     some: Option[int] = Some(SOME_VALUE)
     some_other: Option[int] = Some(OTHER_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
 
     assert some.contains(SOME_VALUE) is True
     assert some.contains(OTHER_VALUE) is False
@@ -266,29 +266,49 @@ def test_equality():
     assert Some(10) != Some(20)
     assert Some([1]) == Some([1])
     assert Some([1]) != Some([2])
-    assert NOTHING == NOTHING
-    assert Some(10) != NOTHING
-    assert NOTHING != Some(10)
+    assert NONE == NONE
+    assert Some(10) != NONE
+    assert NONE != Some(10)
     assert Some(None) == Some(None) # Test Some(None) equality
-    assert Some(None) != NOTHING
-    assert NOTHING != Some(None)
+    assert Some(None) != NONE
+    assert NONE != Some(None)
     assert Some(MyClass(1)) == Some(MyClass(1))
     assert Some(MyClass(1)) != Some(MyClass(2))
     assert Some(10) != 10 # type: ignore
-    assert NOTHING != None # type: ignore
+    
+    # Updated: NONE compares equal to None
+    assert NONE == None # type: ignore
+    assert None == NONE # type: ignore
+    
+    # But strictly not the same object
+    assert NONE is not None
+
+def test_bool_conversion():
+    some: Option[int] = Some(SOME_VALUE)
+    nothing: Option[int] = NONE
+    
+    assert bool(some) is True
+    assert bool(nothing) is False
+    
+    # Idiomatic usage check
+    if nothing:
+        pytest.fail("Nothing should evaluate to False")
+    
+    if not some:
+        pytest.fail("Some should evaluate to True")
 
 def test_repr():
     assert repr(Some(10)) == "Some(10)"
     assert repr(Some("hello")) == "Some('hello')"
     assert repr(Some([1, 2])) == "Some([1, 2])"
-    assert repr(NOTHING) == "Nothing"
+    assert repr(NONE) == "NONE"
     assert repr(Some(None)) == "Some(None)" # Test Some(None) repr
     assert repr(Some(MyClass(5))) == "Some(MyClass(5))"
 
 # --- Type Guards ---
 def test_type_guards():
     some: Option[int] = Some(OK_VALUE)
-    nothing: Option[int] = NOTHING
+    nothing: Option[int] = NONE
 
     if is_some(some):
         assert some.unwrap() == OK_VALUE
@@ -303,7 +323,7 @@ def test_type_guards():
 
     if is_nothing(nothing):
         # Can't unwrap Nothing, just check identity
-        assert nothing is NOTHING
+        assert nothing is NONE
     else:
         pytest.fail("is_nothing failed for Nothing value")
 
@@ -311,7 +331,7 @@ def test_type_guards():
 def test_option_with_none_value():
     # Test creating Some(None) and its interactions
     some_none: Option[int | None] = Some(None) # T is Optional[int]
-    # nothing: Option[int | None] = NOTHING
+    # nothing: Option[int | None] = NONE
 
     assert some_none.is_some() is True
     assert some_none.unwrap() is None
@@ -323,7 +343,7 @@ def test_option_with_none_value():
 
     # Check filter behavior with None
     assert some_none.filter(lambda x: x is None) == Some(None)
-    assert some_none.filter(lambda x: x is not None) == NOTHING
+    assert some_none.filter(lambda x: x is not None) == NONE
 
 def test_option_with_mutable_value():
     original_list = [10, 20]
@@ -350,12 +370,12 @@ def test_option_with_mutable_value():
 def test_option_with_custom_class():
     obj = MyClass(99)
     some_obj: Option[MyClass] = Some(obj)
-    nothing: Option[MyClass] = NOTHING
+    nothing: Option[MyClass] = NONE
 
     assert some_obj.unwrap() is obj
     assert some_obj.map(lambda o: o.x) == Some(99)
     assert some_obj.filter(lambda o: o.x > 0) == Some(obj)
-    assert some_obj.filter(lambda o: o.x < 0) == NOTHING
+    assert some_obj.filter(lambda o: o.x < 0) == NONE
     assert nothing.unwrap_or(MyClass(0)) == MyClass(0)
     assert some_obj.contains(MyClass(99)) is True
 

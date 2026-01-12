@@ -5,7 +5,7 @@ import pytest
 # Adjust the import path if your structure is different
 # Removed ResultBase, OptionBase from imports
 from rustipy.result import Ok, Err, Result, is_ok, is_err
-from rustipy.option import Some, NOTHING, Option
+from rustipy.option import Some, NONE, Option
 
 
 OK_VALUE = 100
@@ -120,12 +120,12 @@ def test_ok_method():
     ok_res: Result[int, str] = Ok(OK_VALUE)
     err_res: Result[int, str] = Err(ERR_VALUE)
     assert ok_res.ok() == Some(OK_VALUE)
-    assert err_res.ok() == NOTHING
+    assert err_res.ok() == NONE
 
 def test_err_method():
     ok_res: Result[int, str] = Ok(OK_VALUE)
     err_res: Result[int, str] = Err(ERR_VALUE)
-    assert ok_res.err() == NOTHING
+    assert ok_res.err() == NONE
     assert err_res.err() == Some(ERR_VALUE)
 
 # --- Mapping ---
@@ -369,13 +369,13 @@ def test_flatten():
 
 def test_transpose():
     ok_some: Result[Option[int], str] = Ok(Some(OK_VALUE))
-    ok_nothing: Result[Option[int], str] = Ok(NOTHING)
+    ok_nothing: Result[Option[int], str] = Ok(NONE)
     err_res: Result[Option[int], str] = Err(ERR_VALUE)
     ok_not_option: Result[int, str] = Ok(123)
 
     # Type checker might struggle here, add ignores if necessary
     assert ok_some.transpose() == Some(Ok(OK_VALUE)) # type: ignore
-    assert ok_nothing.transpose() == NOTHING
+    assert ok_nothing.transpose() == NONE
     assert err_res.transpose() == Some(Err(ERR_VALUE)) # type: ignore
 
     with pytest.raises(TypeError):
@@ -510,7 +510,7 @@ def test_ok_none():
     assert res.is_ok() is True
     assert res.unwrap() is None
     assert res.ok() == Some(None)
-    assert res.err() == NOTHING
+    assert res.err() == NONE
     assert res.map(lambda x: x is None) == Ok(True)
     assert res.unwrap_or(None) is None
     assert res.expect("Should be Ok(None)") is None
@@ -519,7 +519,7 @@ def test_err_none():
     res: Result[int, None] = Err(None)
     assert res.is_err() is True
     assert res.unwrap_err() is None
-    assert res.ok() == NOTHING
+    assert res.ok() == NONE
     assert res.err() == Some(None)
     assert res.map_err(lambda x: x is None) == Err(True)
     assert res.unwrap_or(DEFAULT_VALUE) == DEFAULT_VALUE
@@ -559,11 +559,11 @@ def test_mutable_value_ok():
     assert d == {'a': 1}
 
 def test_mutable_value_err():
-    # Add specific type hint for err_list
-    err_list: list[str] = ['error', 'list']
+    # Add specific type hint for l
+    l: list[str] = ['error', 'list']
     # Use specific list type in Result annotation
-    res: Result[int, list[str]] = Err(err_list)
-    assert res.unwrap_err() is err_list
+    res: Result[int, list[str]] = Err(l)
+    assert res.unwrap_err() is l
     # Use specific list type in comparison value and Err type args
     assert res == Err[Any, list[str]](['error', 'list'])
 
@@ -573,10 +573,10 @@ def test_mutable_value_err():
     # Use specific list type in comparison value and Err type args
     assert mapped == Err[int, list[str]](['error', 'list', '!'])
     # Original list should remain unchanged
-    assert err_list == ['error', 'list']
+    assert l == ['error', 'list']
 
     # Use specific list type for re-creation
-    res = Err[int, list[str]](err_list) # Recreate Err with original list
+    res = Err[int, list[str]](l) # Recreate Err with original list
     # Lambda input type inferred, Ok return type specified
     chained = res.or_else(lambda e: Ok[int, Any](len(e))) # Explicit type
     assert chained == Ok[int, Any](2) # Explicit type
@@ -640,4 +640,3 @@ def test_chaining_early_err():
             .expect_err("Should be other error")
     )
     assert res == OTHER_ERR_VALUE
-
