@@ -4,7 +4,7 @@ from collections.abc import Callable
 from abc import ABC, abstractmethod
 
 if TYPE_CHECKING:
-    from .result import Result, Ok, Err # type: ignore
+    pass # type: ignore
 
 from . import result
 
@@ -15,6 +15,18 @@ E = TypeVar('E') # Type for error in ok_or/ok_or_else (placeholder)
 # Abstract Base Class (Optional but helps define the interface)
 class Option(Generic[T], ABC):
     """Abstract base class for Option types."""
+
+    @staticmethod
+    def from_optional(value: T | None) -> 'Option[T]':
+        """Create an Option from a value that might be None."""
+        if value is None:
+            return NONE
+        return Some(value)
+
+    @abstractmethod
+    def unwrap_or_none(self) -> T | None:
+        """Return the contained value or None if Nothing."""
+        pass
 
     @abstractmethod
     def is_some(self) -> bool:
@@ -175,6 +187,10 @@ class Some(Option[T]):
         # Default value is ignored since we have a value.
         return self._value
 
+    def unwrap_or_none(self) -> T | None:
+        """Return the contained value."""
+        return self._value
+
     # Implementations for new methods in Some
     def expect(self, msg: str) -> T:
         """Return the contained value."""
@@ -295,6 +311,10 @@ class Nothing(Option[Any]): # Generic type doesn't matter for Nothing
     def unwrap_or(self, default: T) -> T:
         """Return the default value."""
         return default
+
+    def unwrap_or_none(self) -> T | None:
+        """Return None."""
+        return None
 
     # Implementations for new methods in Nothing
     def expect(self, msg: str) -> Never:

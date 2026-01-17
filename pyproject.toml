@@ -1,6 +1,6 @@
 [project]
 name = "rustipy"
-version = "0.2.0"
+version = "0.2.1"
 description = "Rustipy your python project"
 authors = [
     {name = "Siyoung September", email = "loldruger@gmail.com"}
@@ -12,8 +12,8 @@ dependencies = []
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0.2",
-    "ruff>=0.14.11",
-    "ty>=0.0.11",
+    "ruff>=0.14.13",
+    "ty>=0.0.12",
 ]
 
 [tool.pytest.ini_options]
