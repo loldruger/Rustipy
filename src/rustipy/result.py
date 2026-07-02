@@ -1,10 +1,7 @@
 import copy
 from collections.abc import Iterator, Callable
-from typing import Generic, Never, TypeVar, final, TypeGuard, Literal, cast, Any, TYPE_CHECKING 
+from typing import Generic, Never, TypeVar, final, TypeGuard, Literal, cast, Any
 from abc import ABC, abstractmethod
-
-if TYPE_CHECKING:
-    from .option import Option, Option, Some, NONE, is_some # type: ignore
 
 from . import option
 
@@ -512,5 +509,4 @@ def is_ok(val: Result[T, E]) -> TypeGuard[Ok[T, E]]:
 def is_err(val: Result[T, E]) -> TypeGuard[Err[T, E]]:
     """Type guard to check if a Result is Err."""
     return val.is_err()
-
 

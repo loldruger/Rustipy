@@ -91,7 +91,9 @@ def test_unwrap_or():
 def test_unwrap_or_else():
     some: Option[int] = Some(SOME_VALUE)
     nothing: Option[int] = NONE
-    default_func = lambda: DEFAULT_OPTION_VALUE * 2
+
+    def default_func() -> int:
+        return DEFAULT_OPTION_VALUE * 2
 
     assert some.unwrap_or_else(default_func) == SOME_VALUE
     assert nothing.unwrap_or_else(default_func) == DEFAULT_OPTION_VALUE * 2
@@ -113,7 +115,10 @@ def test_map_or():
 def test_map_or_else():
     some: Option[int] = Some(SOME_VALUE) # 123
     nothing: Option[int] = NONE
-    default_func = lambda: "computed_default"
+
+    def default_func() -> str:
+        return "computed_default"
+
     assert some.map_or_else(default_func, stringify) == str(SOME_VALUE) # "123"
     assert nothing.map_or_else(default_func, stringify) == "computed_default"
 
@@ -156,8 +161,12 @@ def test_or_():
 def test_or_else():
     s1: Option[int] = Some(SOME_VALUE)
     n1: Option[int] = NONE
-    default_some_func = lambda: Some(DEFAULT_OPTION_VALUE)
-    default_nothing_func = lambda: NONE
+
+    def default_some_func() -> Option[int]:
+        return Some(DEFAULT_OPTION_VALUE)
+
+    def default_nothing_func() -> Option[int]:
+        return NONE
 
     assert s1.or_else(default_some_func) == s1
     assert s1.or_else(default_nothing_func) == s1
@@ -212,7 +221,9 @@ def test_ok_or():
 def test_ok_or_else():
     some: Option[int] = Some(SOME_VALUE)
     nothing: Option[int] = NONE
-    err_func = lambda: "Computed Error"
+
+    def err_func() -> str:
+        return "Computed Error"
 
     # Use explicit types for Ok/Err comparison
     assert some.ok_or_else(err_func) == Ok[int, str](SOME_VALUE)
@@ -274,11 +285,11 @@ def test_equality():
     assert NONE != Some(None)
     assert Some(MyClass(1)) == Some(MyClass(1))
     assert Some(MyClass(1)) != Some(MyClass(2))
-    assert Some(10) != 10 # type: ignore
+    assert Some(10) != 10
     
     # Updated: NONE compares equal to None
-    assert NONE == None # type: ignore
-    assert None == NONE # type: ignore
+    assert NONE == None # noqa: E711
+    assert None == NONE # noqa: E711
     
     # But strictly not the same object
     assert NONE is not None
@@ -357,8 +368,9 @@ def test_option_with_mutable_value():
     assert original_list == [10, 20] # Original unchanged if lambda didn't mutate
 
     # Inspect allows mutation
-    def append_40(l: list[int]):
-        l.append(40)
+    def append_40(values: list[int]):
+        values.append(40)
+
     some_list.inspect(append_40)
     assert original_list == [10, 20, 40]
     assert some_list.unwrap() == [10, 20, 40]
@@ -378,4 +390,3 @@ def test_option_with_custom_class():
     assert some_obj.filter(lambda o: o.x < 0) == NONE
     assert nothing.unwrap_or(MyClass(0)) == MyClass(0)
     assert some_obj.contains(MyClass(99)) is True
-

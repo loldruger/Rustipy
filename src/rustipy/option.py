@@ -1,10 +1,7 @@
 import typing
-from typing import Generic, Literal, TypeVar, final, Any, Never, TypeGuard, TYPE_CHECKING
+from typing import Generic, Literal, TypeVar, final, Any, Never, TypeGuard
 from collections.abc import Callable
 from abc import ABC, abstractmethod
-
-if TYPE_CHECKING:
-    pass # type: ignore
 
 from . import result
 
@@ -157,12 +154,6 @@ class Some(Option[T]):
     __slots__ = ('_value',) # Optimize memory usage
 
     def __init__(self, value: T):
-        # Basic check: Some should not contain None itself,
-        # unless T is explicitly Optional[Something] which is usually an anti-pattern here.
-        if value is None:
-             # This check might be too strict depending on use case, but good default
-             # raise ValueError("Cannot initialize Some with None. Use Nothing instead.")
-             pass # Allow None if T allows it, but generally discouraged
         self._value: T = value
 
     def is_some(self) -> Literal[True]: # Type hint refinement
@@ -248,10 +239,7 @@ class Some(Option[T]):
 
     def zip(self, other: Option[U]) -> Option[tuple[T, U]]:
         """If other is Some, return Some containing a tuple of both values."""
-        if isinstance(other, Some):
-            return Some((self._value, other._value))
-        else:
-            return NONE
+        return other.map(lambda other_value: (self._value, other_value))
 
     def inspect(self, func: Callable[[T], None]) -> Option[T]:
         """Call the function with the contained value and return self."""

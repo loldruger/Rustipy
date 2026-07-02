@@ -4,8 +4,10 @@ This package introduces Option and Result, which are basic functional monad type
 
 ## Installation
 ```bash
-pip install rustipy
+pip install rustipy ## with pip
+uv add rustipy ## with uv
 ```
+
 ## Usage
 
 ### Result example
@@ -127,20 +129,3 @@ def test_type_guards():
     else:
         pytest.fail("is_nothing failed for Nothing value")
 ```
-
-## Distribution Steps
-
-1. Make some changes
-2. Increment the version at `[project]` section in `[pyproject.toml]`
-3. Commit the changes
-4. Build the package
-```
-$ uv build
-```
-5. Tag the release
-```
-$ git tag -vX.X.X
-$ git push origin vX.X.X
-```
-
-Done

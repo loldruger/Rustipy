@@ -2,6 +2,8 @@
     "recommendations": [
         "ms-python.python",
         "ms-python.debugpy",
-        "astral-sh.ty"
+        "charliermarsh.ruff",
+        "astral-sh.ty",
+        "fill-labs.dependi"
     ]
 }
