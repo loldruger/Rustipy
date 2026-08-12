@@ -213,8 +213,8 @@ class Ok(Result[T, E]):
         return Ok(op(self._value))
 
     def map_err(self, op: Callable[[E], F]) -> Result[T, F]:
-        # Type F doesn't matter here, error op is not called
-        return Ok(self._value) # Or cast self? Ok(self._value) is safer
+        # Ok contains no error value, so changing the error type does not require a new object.
+        return self  # ty: ignore[invalid-return-type]
 
     def inspect(self, op: Callable[[T], None]) -> Result[T, E]:
         op(self._value)
@@ -240,8 +240,8 @@ class Ok(Result[T, E]):
         return op(self._value)
 
     def or_else(self, op: Callable[[E], Result[T, F]]) -> Result[T, F]:
-        # Type F doesn't matter here, error op is not called
-        return Ok(self._value) # Or cast self? Ok(self._value) is safer
+        # Ok contains no error value, so changing the error type does not require a new object.
+        return self  # ty: ignore[invalid-return-type]
 
     def unwrap_or(self, default: T) -> T:
         return self._value
@@ -368,8 +368,8 @@ class Err(Result[T, E]):
         return option.Some(self._error)
 
     def map(self, op: Callable[[T], U]) -> Result[U, E]:
-        # Type U doesn't matter here, success op is not called
-        return Err(self._error) # Or cast self? Err(self._error) is safer
+        # Err contains no success value, so changing the success type does not require a new object.
+        return self  # ty: ignore[invalid-return-type]
 
     def map_err(self, op: Callable[[E], F]) -> Result[T, F]:
         return Err(op(self._error))
@@ -395,8 +395,8 @@ class Err(Result[T, E]):
         return self._error
 
     def and_then(self, op: Callable[[T], Result[U, E]]) -> Result[U, E]:
-        # Type U doesn't matter here, success op is not called
-        return Err(self._error) # Or cast self? Err(self._error) is safer
+        # Err contains no success value, so changing the success type does not require a new object.
+        return self  # ty: ignore[invalid-return-type]
 
     def or_else(self, op: Callable[[E], Result[T, F]]) -> Result[T, F]:
         return op(self._error)
@@ -509,4 +509,3 @@ def is_ok(val: Result[T, E]) -> TypeGuard[Ok[T, E]]:
 def is_err(val: Result[T, E]) -> TypeGuard[Err[T, E]]:
     """Type guard to check if a Result is Err."""
     return val.is_err()
-

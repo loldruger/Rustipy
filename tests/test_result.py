@@ -133,12 +133,16 @@ def test_map():
     ok_res: Result[int, str] = Ok(OK_VALUE)
     err_res: Result[int, str] = Err(ERR_VALUE)
     assert ok_res.map(square) == Ok(OK_VALUE * OK_VALUE)
-    assert err_res.map(square) == Err(ERR_VALUE)
+    mapped_err = err_res.map(square)
+    assert mapped_err == Err(ERR_VALUE)
+    assert mapped_err is err_res
 
 def test_map_err():
     ok_res: Result[int, str] = Ok(OK_VALUE)
     err_res: Result[int, str] = Err(ERR_VALUE)
-    assert ok_res.map_err(len_str) == Ok(OK_VALUE)
+    mapped_ok = ok_res.map_err(len_str)
+    assert mapped_ok == Ok(OK_VALUE)
+    assert mapped_ok is ok_res
     assert err_res.map_err(len_str) == Err(len(ERR_VALUE))
 
 def test_map_or():
@@ -263,15 +267,19 @@ def test_and_then():
 
     assert ok_pos.and_then(ok_if_positive) == Ok(5)
     assert ok_neg.and_then(ok_if_positive) == Err("Not positive")
-    assert err_res.and_then(ok_if_positive) == Err(ERR_VALUE)
+    chained_err = err_res.and_then(ok_if_positive)
+    assert chained_err == Err(ERR_VALUE)
+    assert chained_err is err_res
 
 def test_or_else():
     ok_res: Result[int, str] = Ok(OK_VALUE)
     err_orig: Result[int, str] = Err(ERR_VALUE)
     err_neg: Result[int, str] = Err("negative")
 
-    assert ok_res.or_else(err_to_default_ok) == Ok(OK_VALUE)
-    assert ok_res.or_else(err_to_other_err) == Ok(OK_VALUE)
+    recovered_ok = ok_res.or_else(err_to_default_ok)
+    assert recovered_ok == Ok(OK_VALUE)
+    assert recovered_ok is ok_res
+    assert ok_res.or_else(err_to_other_err) is ok_res
 
     assert err_orig.or_else(err_to_default_ok) == Ok(DEFAULT_VALUE)
     assert err_orig.or_else(err_to_other_err) == Err(OTHER_ERR_VALUE)
